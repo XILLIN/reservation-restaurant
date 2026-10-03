@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/favicon.ico/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Users/xnative.dev/PROJECT/webprogramming/app/favicon.ico/route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

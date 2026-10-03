@@ -1,0 +1,13 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/app/[locale]/reservations/page": [
+      "static/media/2a65768255d6b625-s.p.3u4lli0-axodc.woff2",
+      "static/media/f287e533ed04f2e6-s.p.2ijos0_3tnz-u.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2",
+      "static/media/f304c3cf3765fb5f-s.p.0h0-3wqrkgcb1.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

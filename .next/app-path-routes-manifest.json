@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/_global-error/page": "/_global-error",
+  "/favicon.ico/route": "/favicon.ico",
+  "/icon.svg/route": "/icon.svg",
+  "/[locale]/about/page": "/[locale]/about",
+  "/[locale]/contact/page": "/[locale]/contact",
+  "/[locale]/menu/page": "/[locale]/menu",
+  "/[locale]/page": "/[locale]",
+  "/[locale]/reservations/confirmation/page": "/[locale]/reservations/confirmation",
+  "/[locale]/reservations/page": "/[locale]/reservations"
+}
