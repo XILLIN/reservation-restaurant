@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },
+  allowedDevOrigins: [
+    '*.trycloudflare.com',
+    '*.loca.lt',
+  ],
 };
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");

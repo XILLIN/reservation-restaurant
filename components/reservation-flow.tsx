@@ -21,6 +21,7 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
   const [reservation, setReservation] = useState<Reservation>({ ...empty, ...initialSelection });
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("reservation");
@@ -43,12 +44,47 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
     }
     setError(""); setStep((value) => Math.min(4, value + 1));
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (step < 4) { next(); return; }
-    const reference = `ME-${reservation.date.replaceAll("-", "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-    const query = new URLSearchParams({ date: reservation.date, time: reservation.time, guests: reservation.guests, seating: reservation.seating, ref: reference });
-    router.push(`/reservations/confirmation?${query.toString()}`);
+    
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const reference = `ME-${reservation.date.replaceAll("-", "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      
+      const payload = {
+        reservationCode: reference,
+        name: `${reservation.firstName} ${reservation.lastName}`.trim(),
+        email: reservation.email,
+        phone: reservation.phone,
+        date: reservation.date,
+        time: reservation.time,
+        guests: Number(reservation.guests),
+        seatingOption: reservation.seating,
+        specialRequests: reservation.occasion ? `Occasion: ${reservation.occasion}. ${reservation.requests}`.trim() : reservation.requests,
+      };
+
+      const res = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const query = new URLSearchParams({ date: reservation.date, time: reservation.time, guests: reservation.guests, seating: reservation.seating, ref: reference });
+        router.push(`/reservations/confirmation?${query.toString()}`);
+      } else {
+        setError(data.error || "Failed to create reservation.");
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setIsSubmitting(false);
+    }
   }
   const selectedSeat = seatingOptions.find((seat) => seat.id === reservation.seating);
   const seatingName = selectedSeat ? t(`seating.${selectedSeat.nameKey}`) : t("seating.notSelected");
@@ -83,7 +119,7 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
         {step === 4 && <section className="flow-step"><p className="eyebrow">{t("review.eyebrow")}</p><h2>{t.rich("review.title", { em: (chunks) => <em>{chunks}</em> })}</h2><p className="step-intro">{t("review.intro")}</p><div className="review-card"><div className="review-photo"><Image src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=85" alt={t("summary.imageAlt")} fill sizes="(max-width: 760px) 100vw, 600px" /></div><div className="review-details"><div><span className="review-label">{t("review.dateTime")}</span><strong>{selectedDate}</strong><span>{reservation.time}</span><button type="button" onClick={() => setStep(1)}>{t("review.editDate")} <ChevronRight size={14} aria-hidden="true" /></button></div><div><span className="review-label">{t("review.table")}</span><strong>{common("guests", { count: Number(reservation.guests) })}</strong><span>{seatingName}</span><button type="button" onClick={() => setStep(2)}>{t("review.editTable")} <ChevronRight size={14} aria-hidden="true" /></button></div><div><span className="review-label">{t("review.for")}</span><strong>{reservation.firstName} {reservation.lastName}</strong><span>{reservation.email}</span><span>{reservation.phone}</span></div>{reservation.occasion && <div><span className="review-label">{t("details.occasion")}</span><strong>{t(`details.${{ Birthday: "birthday", Anniversary: "anniversary", "Business dinner": "business", "Date night": "dateNight", Other: "other" }[reservation.occasion] || "other"}`)}</strong></div>}{reservation.requests && <div><span className="review-label">{t("review.note")}</span><p>{reservation.requests}</p></div>}</div></div><p className="policy-note">{t("review.policy", { phone: common("phone") })}</p></section>}
 
         {error && <p className="form-error" role="alert">{error}</p>}
-        <div className="flow-controls">{step > 1 ? <button className="back-button" type="button" onClick={() => { setError(""); setStep((value) => value - 1); }}><ArrowLeft size={16} aria-hidden="true" /> {common("back")}</button> : <span />}{step < 4 ? <button className="button button-dark" type="button" onClick={next} disabled={step === 1 && Number(reservation.guests) >= 9}>{common("continue")} <ArrowRight size={16} aria-hidden="true" /></button> : <button className="button button-dark" type="submit">{t("review.confirm")} <CheckCircle2 size={17} aria-hidden="true" /></button>}</div>
+        <div className="flow-controls">{step > 1 ? <button className="back-button" type="button" onClick={() => { setError(""); setStep((value) => value - 1); }}><ArrowLeft size={16} aria-hidden="true" /> {common("back")}</button> : <span />}{step < 4 ? <button className="button button-dark" type="button" onClick={next} disabled={step === 1 && Number(reservation.guests) >= 9}>{common("continue")} <ArrowRight size={16} aria-hidden="true" /></button> : <button className="button button-dark" type="submit" disabled={isSubmitting}>{isSubmitting ? "Processing..." : t("review.confirm")} {!isSubmitting && <CheckCircle2 size={17} aria-hidden="true" />}</button>}</div>
       </form>
       <p className="secure-note">{t("secure")}</p>
     </div>
