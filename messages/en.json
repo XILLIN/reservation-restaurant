@@ -14,7 +14,9 @@
     "close": "Close navigation menu",
     "shortEnglish": "EN",
     "shortThai": "TH",
-    "wordmarkSub": "Bangkok · Since 2021"
+    "wordmarkSub": "Bangkok · Since 2021",
+    "account": "My account",
+    "login": "Sign in"
   },
   "common": {
     "skipToContent": "Skip to content",
@@ -124,14 +126,38 @@
     "tagDaily": "Daily catch",
     "disclaimer": "Please let us know about allergies when booking. Our kitchen handles all major allergens, so we can’t guarantee an entirely allergen-free dish.",
     "items": {
-      "scallop": { "name": "Charred Hokkaido Scallop", "description": "Brown butter, young coconut, finger lime" },
-      "tomato": { "name": "Tomato & Green Mango", "description": "Heirloom tomato, nahm jim, toasted rice" },
-      "marrow": { "name": "Wood-roasted Bone Marrow", "description": "Sourdough, smoked shallot, parsley" },
-      "duck": { "name": "Dry-aged Duck Breast", "description": "Black garlic, seasonal greens, tamarind jus" },
-      "wagyu": { "name": "Ember Wagyu", "description": "Wood-fired wagyu, smoked onion, red wine" },
-      "fish": { "name": "Market Fish", "description": "Banana leaf, turmeric, charred lime" },
-      "cheesecake": { "name": "Burnt Basque Cheesecake", "description": "Palm sugar, cultured cream" },
-      "cacao": { "name": "Cacao & Coffee", "description": "70% Thai cacao, espresso, sea salt" }
+      "scallop": {
+        "name": "Charred Hokkaido Scallop",
+        "description": "Brown butter, young coconut, finger lime"
+      },
+      "tomato": {
+        "name": "Tomato & Green Mango",
+        "description": "Heirloom tomato, nahm jim, toasted rice"
+      },
+      "marrow": {
+        "name": "Wood-roasted Bone Marrow",
+        "description": "Sourdough, smoked shallot, parsley"
+      },
+      "duck": {
+        "name": "Dry-aged Duck Breast",
+        "description": "Black garlic, seasonal greens, tamarind jus"
+      },
+      "wagyu": {
+        "name": "Ember Wagyu",
+        "description": "Wood-fired wagyu, smoked onion, red wine"
+      },
+      "fish": {
+        "name": "Market Fish",
+        "description": "Banana leaf, turmeric, charred lime"
+      },
+      "cheesecake": {
+        "name": "Burnt Basque Cheesecake",
+        "description": "Palm sugar, cultured cream"
+      },
+      "cacao": {
+        "name": "Cacao & Coffee",
+        "description": "70% Thai cacao, espresso, sea salt"
+      }
     }
   },
   "about": {
@@ -184,7 +210,14 @@
     "eyebrow": "An evening worth keeping",
     "title": "Let’s make a\n<em>reservation.</em>",
     "intro": "We look forward to having you at our table.",
-    "steps": { "group": "Your evening", "date": "Date & guests", "time": "Time & seating", "details": "Your details", "review": "Review", "count": "0{step} <span>/</span> 04" },
+    "steps": {
+      "group": "Your evening",
+      "date": "Date & guests",
+      "time": "Time & seating",
+      "details": "Your details",
+      "review": "Review",
+      "count": "0{step} <span>/</span> 04"
+    },
     "date": {
       "eyebrow": "01 / The occasion",
       "title": "When shall we\n<em>expect you?</em>",
@@ -305,5 +338,83 @@
     "signoff": "Good food. Good fire. Good company.",
     "reservations": "Reservations",
     "copyright": "© 2026 Maison Ember"
+  },
+  "account": {
+    "eyebrow": "Your place at the table",
+    "loginTitle": "Welcome back.",
+    "loginIntro": "Sign in to book a table and keep your reservations together.",
+    "registerTitle": "Make yourself at home.",
+    "registerIntro": "Create your account for an easier next visit.",
+    "adminTitle": "Staff sign in",
+    "adminIntro": "Use your individual staff account to access the restaurant dashboard.",
+    "name": "Full name",
+    "email": "Email address",
+    "phone": "Phone number",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHint": "Use 12–128 characters. A memorable passphrase works well.",
+    "login": "Sign in",
+    "register": "Create account",
+    "busy": "Please wait…",
+    "noAccount": "New to Maison Ember?",
+    "hasAccount": "Already have an account?",
+    "backHome": "Back to the restaurant",
+    "account": "My account",
+    "accountIntro": "A few details to make your next visit feel effortless.",
+    "profileTitle": "Personal details",
+    "profileIntro": "Your contact details help us prepare for your visit.",
+    "emailHint": "Your sign-in email stays the same.",
+    "save": "Save changes",
+    "saved": "Your details have been saved.",
+    "securityTitle": "Change password",
+    "securityIntro": "Enter your current password to choose a new one. Other devices will be signed out after the change.",
+    "changePassword": "Update password",
+    "passwordChanged": "Password updated. Your other sessions have been signed out.",
+    "logout": "Sign out",
+    "dashboard": "Staff dashboard",
+    "profileTab": "Profile & security",
+    "reservationsTab": "My reservations",
+    "reservationsTitle": "Your upcoming evenings.",
+    "reservationsIntro": "Your reservations, all in one place. Times are shown in Bangkok time.",
+    "emptyTitle": "Your next evening starts here.",
+    "emptyIntro": "You have no reservations yet. Find a date and join us at the table.",
+    "reserve": "Book a table",
+    "guests": "{count} guests",
+    "reference": "Reservation reference",
+    "loading": "Loading your account…",
+    "retry": "Try again",
+    "sessionExpired": "Your session has expired. Sign in again to continue.",
+    "validationTitle": "Please check these details:",
+    "errors": {
+      "name": "Enter a name between 2 and 100 characters.",
+      "phone": "Enter a valid phone number (7–25 characters).",
+      "email": "Enter a valid email address.",
+      "password": "Use a password between 12 and 128 characters.",
+      "confirmPassword": "The passwords do not match.",
+      "currentPassword": "Enter your current password.",
+      "samePassword": "Choose a password different from your current one.",
+      "invalidCredentials": "The email or password is incorrect. Please try again.",
+      "duplicateEmail": "An account with this email already exists. Please sign in.",
+      "forbidden": "This account does not have staff access.",
+      "rateLimit": "Too many attempts. Please wait a minute and try again.",
+      "invalidInput": "Please check the information and try again.",
+      "network": "Unable to connect. Please try again.",
+      "server": "Unable to complete your request. Please try again shortly.",
+      "invalidCurrentPassword": "The current password is incorrect.",
+      "sessionExpired": "Your session has expired. Please sign in again."
+    },
+    "statuses": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "arrived": "Arrived",
+      "seated": "Seated",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no-show": "Missed visit"
+    }
   }
 }

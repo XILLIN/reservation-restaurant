@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountMenu } from "@/components/account/account-menu";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -41,13 +42,14 @@ export function SiteNav() {
         <nav className="desktop-nav" aria-label={t("mainLabel")}>
           {links.map((link) => <Link key={link.href} href={link.href}>{t(link.key)}</Link>)}
         </nav>
-        <div className="desktop-actions">{renderLanguageSelector()}<Link className="nav-cta" href="/reservations">{t("reserve")} <span aria-hidden="true">↗</span></Link></div>
+        <div className="desktop-actions">{renderLanguageSelector()}<AccountMenu /><Link className="nav-cta" href="/reservations">{t("reserve")} <span aria-hidden="true">↗</span></Link></div>
         <button className="mobile-menu-button" type="button" aria-label={open ? t("close") : t("open")} aria-expanded={open} aria-controls="mobile-navigation" onClick={() => setOpen(!open)}>
           {open ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
         </button>
       </div>
       {open && <nav id="mobile-navigation" className="mobile-nav" aria-label={t("mobileLabel")}>
         {links.map((link) => <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>{t(link.key)}</Link>)}
+        <AccountMenu onNavigate={() => setOpen(false)} />
         <Link className="mobile-nav-cta" href="/reservations" onClick={() => setOpen(false)}>{t("reserve")} <span aria-hidden="true">↗</span></Link>
         {renderLanguageSelector()}
       </nav>}

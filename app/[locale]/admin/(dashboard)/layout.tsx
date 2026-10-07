@@ -1,9 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { requirePageAdmin } from "@/lib/auth-guards";
 import { AdminSidebar } from "@/components/admin/sidebar";
-
-type Locale = "th" | "en";
 
 export default async function AdminDashboardLayout({ 
   children, 
@@ -15,12 +12,7 @@ export default async function AdminDashboardLayout({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const cookieStore = await cookies();
-  const isAuthenticated = cookieStore.has("admin_token");
-
-  if (!isAuthenticated) {
-    redirect(`/${locale}/admin/login`);
-  }
+  await requirePageAdmin(locale);
 
   return (
     <div className="min-h-screen bg-[#F7F7F5] flex flex-col md:flex-row">

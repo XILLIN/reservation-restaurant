@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
+import { requireAdmin } from "@/lib/auth-guards";
+import { apiError } from "@/lib/api";
 import { Reservation } from "@/models/Reservation";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    await requireAdmin(request);
     await connectToDatabase();
     const allReservations = await Reservation.find({});
     
@@ -67,8 +70,5 @@ export async function GET() {
     };
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error("API GET Analytics Error:", error);
-    return NextResponse.json({ success: false, error: "Failed to fetch analytics" }, { status: 400 });
-  }
+  } catch (error) { return apiError(error); }
 }

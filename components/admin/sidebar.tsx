@@ -1,13 +1,13 @@
 "use client";
 
+import { LogoutButton } from "@/components/account/logout-button";
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Calendar, CalendarDays, Map, Table2, Users, BarChart3, Settings, LogOut, UtensilsCrossed, Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Calendar, CalendarDays, Map, Table2, Users, BarChart3, Settings, UtensilsCrossed, Menu, X } from "lucide-react";
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
   // Basic locale extraction from pathname (e.g., /en/admin/... -> en)
@@ -24,11 +24,6 @@ export function AdminSidebar() {
     { name: "Settings", href: `/${locale}/admin/settings`, icon: Settings },
   ];
 
-  const handleLogout = async () => {
-    await fetch("/api/admin/logout", { method: "POST" });
-    router.push(`/${locale}/admin/login`);
-    router.refresh();
-  };
 
   return (
     <>
@@ -69,7 +64,7 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive = pathname === item.href || (item.href !== `/${locale}/admin` && pathname.startsWith(`${item.href}/`));
           const Icon = item.icon;
           return (
             <Link
@@ -91,13 +86,8 @@ export function AdminSidebar() {
 
       {/* Footer / Logout */}
       <div className="p-4 border-t border-stone-200">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-stone-500 hover:bg-red-500/10 hover:text-red-400 transition-all group"
-        >
-          <LogOut className="w-5 h-5 text-stone-400 group-hover:text-red-400 transition-colors" />
-          Sign Out
-        </button>
+        <Link href={`/${locale}/account`} className="flex items-center gap-3 px-4 py-3 text-sm text-stone-600">{locale === "th" ? "บัญชีของฉัน" : "My account"}</Link>
+        <LogoutButton />
       </div>
       </aside>
     </>

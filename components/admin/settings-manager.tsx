@@ -1,9 +1,12 @@
 "use client";
 
+import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { useState } from "react";
-import { Save, Store, Shield, Clock, Bell, User } from "lucide-react";
+import { Save, Store, Shield, Clock, Bell, CheckCircle2 } from "lucide-react";
 
 export function SettingsManager() {
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState("general");
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -131,19 +134,11 @@ export function SettingsManager() {
                     <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
                     <div>
                       <p className="font-medium text-stone-900 text-sm">Secure Password Management</p>
-                      <p className="text-sm text-stone-600 mt-1">To change your production admin password, please update the <code className="bg-white px-1.5 py-0.5 rounded border border-stone-200">ADMIN_PASSWORD</code> variable in your `.env` file and restart the server.</p>
+                      <p className="text-sm text-stone-600 mt-1">{locale === "th" ? "จัดการข้อมูลส่วนตัวและเปลี่ยนรหัสผ่านได้ที่หน้าบัญชีของฉัน" : "Manage your personal details and password from your account."}</p>
                     </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Current Active Admin Token</label>
-                    <div className="flex items-center gap-4">
-                      <input type="text" disabled value="••••••••••••••••••••••••" className="w-full bg-stone-100 border border-stone-200 rounded-xl px-4 py-2.5 text-stone-500 cursor-not-allowed" />
-                      <button type="button" className="px-4 py-2.5 bg-white border border-stone-200 text-stone-700 rounded-xl text-sm font-medium hover:bg-stone-50 transition-colors whitespace-nowrap">
-                        Revoke All
-                      </button>
-                    </div>
-                  </div>
+                  <Link href="/account" className="button button-dark">{locale === "th" ? "บัญชีของฉัน" : "My account"}</Link>
                 </div>
               </div>
             )}
@@ -179,7 +174,7 @@ export function SettingsManager() {
           </div>
 
           <div className="bg-stone-50/50 p-6 sm:p-8 flex items-center justify-end gap-4">
-            {saved && <span className="text-sm text-emerald-600 font-medium flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Settings saved successfully</span>}
+            {saved && <span className="text-sm text-emerald-600 font-medium flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Settings saved successfully</span>}
             <button 
               type="submit" 
               disabled={isSaving}
@@ -193,15 +188,5 @@ export function SettingsManager() {
       </div>
 
     </div>
-  );
-}
-
-// CheckCircle icon missing from imports above, adding it locally for the success message
-function CheckCircle(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-    </svg>
   );
 }

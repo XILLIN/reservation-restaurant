@@ -3,27 +3,27 @@
 import { useEffect, useState } from "react";
 import { BarChart3, TrendingUp, Users, Clock, Map, CalendarDays, Ban } from "lucide-react";
 
+type AnalyticsData = { empty: true } | {
+  empty: false;
+  overview: { totalBookings: number; validBookings: number; avgPartySize: string | number; cancellationRate: string; noShowRate: string; peakTime: string };
+  zones: { counts: Record<string, number>; guests: Record<string, number> };
+  times: Record<string, number>;
+  days: Record<string, number>;
+};
+
 export function AnalyticsDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnalytics();
+    const controller = new AbortController();
+    fetch("/api/analytics", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setData(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      const res = await fetch("/api/analytics");
-      const json = await res.json();
-      if (json.success) {
-        setData(json.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch analytics", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -33,7 +33,7 @@ export function AnalyticsDashboard() {
     );
   }
 
-  if (data?.empty) {
+  if (!data || data.empty) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] bg-white border border-stone-200 rounded-2xl">
         <BarChart3 className="w-12 h-12 text-stone-300 mb-4" />
@@ -43,8 +43,7 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const { overview, zones, times, days } = data;
-
+  const { overview, zones, days } = data;
   // Prepare simple CSS bar chart data for Zones
   const maxZoneCount = Math.max(...Object.values(zones.counts as Record<string, number>), 1);
   const zoneLabels: Record<string, string> = { "dining-room": "Dining Room", "terrace": "Terrace", "chefs-counter": "Chef's Counter" };
