@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, Clock, XCircle, Trash2, Calendar, Users, MapPin, Search, LogOut, ChevronDown, CheckCircle2, UserCheck, Utensils, Ban, Filter, X } from "lucide-react";
-import { IReservation, ReservationStatus } from "@/models/Reservation";
+import { CheckCircle, Clock, XCircle, Trash2, Calendar, Users, MapPin, Search, ChevronDown, CheckCircle2, UserCheck, Utensils, Ban, Filter, X } from "lucide-react";
+import { ReservationStatus } from "@/models/Reservation";
 
 type ReservationDoc = {
   _id: string;
@@ -34,22 +34,14 @@ export function ReservationsManager() {
   const [selectedRes, setSelectedRes] = useState<ReservationDoc | null>(null);
 
   useEffect(() => {
-    fetchReservations();
+    const controller = new AbortController();
+    fetch("/api/reservations", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setReservations(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchReservations = async () => {
-    try {
-      const res = await fetch("/api/reservations");
-      const data = await res.json();
-      if (data.success) {
-        setReservations(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch reservations", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
@@ -88,7 +80,7 @@ export function ReservationsManager() {
 
   // Date filtering logic
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
-  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date(Date.now() + 86400000));
+  const [tomorrow] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date(Date.now() + 86400000)));
   
   const filteredReservations = reservations.filter((r) => {
     const matchesSearch = 
@@ -167,7 +159,7 @@ export function ReservationsManager() {
           <div className="relative w-full sm:w-40">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as ReservationStatus | "all")}
               className="w-full pl-4 pr-8 py-2 appearance-none bg-white border border-stone-200 rounded-lg text-sm text-stone-700 focus:outline-none focus:border-amber-500/50 transition-all cursor-pointer"
             >
               <option value="all">All Status</option>

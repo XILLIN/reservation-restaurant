@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Users, X, Trash2, MapPin } from "lucide-react";
-import { IReservation, ReservationStatus } from "@/models/Reservation";
+import { ChevronLeft, ChevronRight, Users, X, Trash2, MapPin } from "lucide-react";
+import { ReservationStatus } from "@/models/Reservation";
 
 type ReservationDoc = {
   _id: string;
@@ -32,22 +32,14 @@ export function CalendarManager() {
   const [selectedRes, setSelectedRes] = useState<ReservationDoc | null>(null);
 
   useEffect(() => {
-    fetchReservations();
+    const controller = new AbortController();
+    fetch("/api/reservations", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setReservations(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchReservations = async () => {
-    try {
-      const res = await fetch("/api/reservations");
-      const data = await res.json();
-      if (data.success) {
-        setReservations(data.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch reservations", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

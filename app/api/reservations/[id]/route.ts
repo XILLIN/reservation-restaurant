@@ -1,42 +1,33 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import { Reservation } from "@/models/Reservation";
+import { requireAdmin } from "@/lib/auth-guards";
+import { apiError, assertSameOrigin, readJson } from "@/lib/api";
+import { objectIdSchema, reservationStatusSchema } from "@/lib/validation";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+type Context = { params: Promise<{ id: string }> };
+
+export async function PATCH(request: Request, { params }: Context) {
   try {
-    const { id } = await params;
-    const body = await request.json();
+    assertSameOrigin(request);
+    await requireAdmin(request);
+    const id = objectIdSchema.parse((await params).id);
+    const body = reservationStatusSchema.parse(await readJson(request));
     await connectToDatabase();
-
-    const updatedReservation = await Reservation.findByIdAndUpdate(
-      id,
-      { status: body.status },
-      { new: true }
-    );
-
-    if (!updatedReservation) {
-      return NextResponse.json({ success: false, error: "Reservation not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: updatedReservation });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to update reservation" }, { status: 400 });
-  }
+    const reservation = await Reservation.findByIdAndUpdate(id, { $set: body }, { returnDocument: "after", runValidators: true });
+    if (!reservation) return NextResponse.json({ success: false, error: "NOT_FOUND" }, { status: 404 });
+    return NextResponse.json({ success: true, data: reservation });
+  } catch (error) { return apiError(error); }
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: Context) {
   try {
-    const { id } = await params;
+    assertSameOrigin(request);
+    await requireAdmin(request);
+    const id = objectIdSchema.parse((await params).id);
     await connectToDatabase();
-
-    const deletedReservation = await Reservation.findByIdAndDelete(id);
-
-    if (!deletedReservation) {
-      return NextResponse.json({ success: false, error: "Reservation not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: {} });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to delete reservation" }, { status: 400 });
-  }
+    const reservation = await Reservation.findByIdAndDelete(id);
+    if (!reservation) return NextResponse.json({ success: false, error: "NOT_FOUND" }, { status: 404 });
+    return NextResponse.json({ success: true });
+  } catch (error) { return apiError(error); }
 }

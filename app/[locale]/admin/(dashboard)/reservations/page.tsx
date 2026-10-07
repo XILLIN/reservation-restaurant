@@ -1,3 +1,4 @@
+import { requirePageAdmin } from "@/lib/auth-guards";
 import { setRequestLocale } from "next-intl/server";
 import { ReservationsManager } from "@/components/admin/reservations-manager";
 
@@ -11,6 +12,7 @@ export const metadata = {
 export default async function ReservationsPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requirePageAdmin(locale);
 
   return (
     <div className="p-8">

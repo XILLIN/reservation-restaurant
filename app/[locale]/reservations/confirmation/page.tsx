@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/auth-guards";
+import connectToDatabase from "@/lib/mongodb";
+import { Reservation } from "@/models/Reservation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowRight, CalendarPlus, Check } from "lucide-react";
@@ -22,7 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 }
 
 export default async function ConfirmationPage({ params, searchParams }: { params: Promise<{ locale: Locale }>; searchParams: Promise<Booking> }) {
-  const [{ locale }, booking] = await Promise.all([params, searchParams]);
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  const session = await requirePageUser(locale, "/account/reservations");
+  if (typeof query.ref !== "string") redirect(`/${locale}/account/reservations`);
+  await connectToDatabase();
+  const saved = await Reservation.findOne({ reservationCode: query.ref, userId: session.user.id }).lean();
+  if (!saved) redirect(`/${locale}/account/reservations`);
+  const booking = { ref: saved.reservationCode, date: saved.date, time: saved.time, guests: String(saved.guests), seating: saved.seatingOption };
   setRequestLocale(locale);
   const t = await getTranslations("confirmation");
   const common = await getTranslations("common");

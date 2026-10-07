@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle, Clock, XCircle, Trash2, Calendar, Users, MapPin, Search, LogOut, ChevronDown, User, Activity, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { IReservation } from "@/models/Reservation";
 
 type ReservationDoc = {
   _id: string;
@@ -29,22 +28,14 @@ export function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchReservations();
+    const controller = new AbortController();
+    fetch("/api/reservations", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setReservations(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchReservations = async () => {
-    try {
-      const res = await fetch("/api/reservations");
-      const data = await res.json();
-      if (data.success) {
-        setReservations(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch reservations", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, Info, LayoutGrid, Check, Ban, Utensils, X, Maximize } from "lucide-react";
-import { ITable, TableZone, TableStatus } from "@/models/Table";
+import { Plus, Trash2, LayoutGrid, X, Maximize } from "lucide-react";
+import { TableZone, TableStatus } from "@/models/Table";
 
 type TableDoc = {
   _id: string;
@@ -25,22 +25,14 @@ export function TablesManager() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchTables();
+    const controller = new AbortController();
+    fetch("/api/tables", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setTables(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchTables = async () => {
-    try {
-      const res = await fetch("/api/tables");
-      const data = await res.json();
-      if (data.success) {
-        setTables(data.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch tables", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddTable = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +54,7 @@ export function TablesManager() {
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong");
     } finally {
       setIsSubmitting(false);
@@ -218,7 +210,7 @@ export function TablesManager() {
                 >
                   <option value="dining-room">Dining Room</option>
                   <option value="terrace">Terrace</option>
-                  <option value="chefs-counter">Chef's Counter</option>
+                  <option value="chefs-counter">Chef&apos;s Counter</option>
                 </select>
               </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Activity, CheckCircle2, Clock, Ban, Utensils, UserCheck, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Utensils, UserCheck } from "lucide-react";
 import { IReservation } from "@/models/Reservation";
 
 type ReservationDoc = IReservation & { _id: string };
@@ -11,22 +11,14 @@ export function DashboardOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchReservations();
+    const controller = new AbortController();
+    fetch("/api/reservations", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setReservations(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchReservations = async () => {
-    try {
-      const res = await fetch("/api/reservations");
-      const data = await res.json();
-      if (data.success) {
-        setReservations(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch reservations", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
   const todayReservations = reservations.filter(r => r.date === today);
@@ -68,7 +60,7 @@ export function DashboardOverview() {
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-white shadow-sm border border-stone-200 backdrop-blur-md">
-          <p className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-1">Today's Bookings</p>
+          <p className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-1">Today&apos;s Bookings</p>
           <div className="flex items-end gap-3">
             <span className="text-3xl font-light text-stone-900">{stats.total}</span>
             <span className="text-sm text-stone-500 mb-1">({stats.totalGuests} guests)</span>
@@ -130,7 +122,7 @@ export function DashboardOverview() {
 
         {/* Timeline */}
         <div className="bg-white shadow-sm border border-stone-200 rounded-2xl p-6 backdrop-blur-md">
-          <h3 className="text-lg font-medium text-stone-900 mb-6">Today's Timeline</h3>
+          <h3 className="text-lg font-medium text-stone-900 mb-6">Today&apos;s Timeline</h3>
           {sortedTimes.length === 0 ? (
             <div className="text-stone-500 text-sm text-center py-8">
               No reservations for today.

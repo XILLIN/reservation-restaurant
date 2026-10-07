@@ -3,6 +3,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export type ReservationStatus = "pending" | "confirmed" | "arrived" | "seated" | "completed" | "cancelled" | "no-show";
 
 export interface IReservation extends Document {
+  userId?: string;
   reservationCode: string;
   name: string;
   email: string;
@@ -19,6 +20,7 @@ export interface IReservation extends Document {
 }
 
 const ReservationSchema = new Schema<IReservation>({
+  userId: { type: String, index: true },
   reservationCode: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   email: { type: String, required: true },

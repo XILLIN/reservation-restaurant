@@ -6,24 +6,40 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "create-admin": "node --env-file-if-exists=.env.local --import tsx scripts/create-admin.mts",
+    "dev:local": "node --import tsx scripts/dev-local.mts"
   },
   "dependencies": {
+    "@better-auth/mongo-adapter": "^1.7.7",
+    "better-auth": "^1.7.7",
     "lucide-react": "^0.468.0",
+    "mongodb": "^7.7.0",
     "mongoose": "^9.10.4",
     "next": "^16.3.6",
     "next-intl": "^4.14.6",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.15.30",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.39.0",
-    "eslint-config-next": "^14.2.35",
+    "eslint-config-next": "^16.3.6",
+    "mongodb-memory-server": "^11.3.0",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=22.15.0"
   }
 }

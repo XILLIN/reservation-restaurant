@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, Clock3, UsersRound } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
+import { authErrorKey } from "@/lib/account-ui";
 import { seatingOptions, timeSlots } from "@/data/restaurant";
 
 type Reservation = { date: string; time: string; guests: string; seating: string; firstName: string; lastName: string; email: string; phone: string; occasion: string; requests: string };
@@ -17,8 +18,9 @@ function prettyDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(tag, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok" }).format(new Date(`${value}T12:00:00Z`));
 }
 
-export function ReservationFlow({ initialSelection }: { initialSelection: Partial<Pick<Reservation, "date" | "time" | "guests">> }) {
-  const [reservation, setReservation] = useState<Reservation>({ ...empty, ...initialSelection });
+export function ReservationFlow({ initialSelection, user }: { initialSelection: Partial<Pick<Reservation, "date" | "time" | "guests">>; user: { name: string; email: string; phone: string } }) {
+  const account = useTranslations("account");
+  const [reservation, setReservation] = useState<Reservation>({ ...empty, ...initialSelection, firstName: user.name.split(" ")[0], lastName: user.name.split(" ").slice(1).join(" "), email: user.email, phone: user.phone });
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +40,7 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
     if (step === 2 && !reservation.time) { setError(t("errors.time")); return; }
     if (step === 2 && !reservation.seating) { setError(t("errors.seating")); return; }
     if (step === 3) {
-      const required = [reservation.firstName, reservation.lastName, reservation.email, reservation.phone];
+      const required = [reservation.firstName, reservation.email, reservation.phone];
       if (required.some((value) => !value.trim())) { setError(t("errors.details")); return; }
       if (!/^\S+@\S+\.\S+$/.test(reservation.email)) { setError(t("errors.email")); return; }
     }
@@ -52,10 +54,8 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
     setError("");
 
     try {
-      const reference = `ME-${reservation.date.replaceAll("-", "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
       
       const payload = {
-        reservationCode: reference,
         name: `${reservation.firstName} ${reservation.lastName}`.trim(),
         email: reservation.email,
         phone: reservation.phone,
@@ -75,14 +75,16 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
       const data = await res.json();
 
       if (data.success) {
-        const query = new URLSearchParams({ date: reservation.date, time: reservation.time, guests: reservation.guests, seating: reservation.seating, ref: reference });
+        const booking = data.data;
+        const query = new URLSearchParams({ ref: booking.reservationCode });
         router.push(`/reservations/confirmation?${query.toString()}`);
       } else {
-        setError(data.error || "Failed to create reservation.");
+        if (res.status === 401) { router.push("/login?next=%2Freservations"); return; }
+        setError(account(`errors.${authErrorKey(data.error, res.status)}`));
         setIsSubmitting(false);
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch {
+      setError(account("errors.network"));
       setIsSubmitting(false);
     }
   }
@@ -109,7 +111,7 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
         </section>}
 
         {step === 3 && <section className="flow-step"><p className="eyebrow">{t("details.eyebrow")}</p><h2>{t.rich("details.title", { em: (chunks) => <em>{chunks}</em> })}</h2><p className="step-intro">{t("details.intro")}</p>
-          <div className="field-grid"><div className="form-field"><label htmlFor="first-name">{t("details.first")} <span aria-label={t("date.required")}>*</span></label><input id="first-name" autoComplete="given-name" value={reservation.firstName} onChange={(e) => update("firstName", e.target.value)} required /></div><div className="form-field"><label htmlFor="last-name">{t("details.last")} <span aria-label={t("date.required")}>*</span></label><input id="last-name" autoComplete="family-name" value={reservation.lastName} onChange={(e) => update("lastName", e.target.value)} required /></div>
+          <div className="field-grid"><div className="form-field"><label htmlFor="first-name">{t("details.first")} <span aria-label={t("date.required")}>*</span></label><input id="first-name" autoComplete="given-name" value={reservation.firstName} onChange={(e) => update("firstName", e.target.value)} required /></div><div className="form-field"><label htmlFor="last-name">{t("details.last")}</label><input id="last-name" autoComplete="family-name" value={reservation.lastName} onChange={(e) => update("lastName", e.target.value)} /></div>
             <div className="form-field"><label htmlFor="email">{t("details.email")} <span aria-label={t("date.required")}>*</span></label><input id="email" type="email" autoComplete="email" value={reservation.email} onChange={(e) => update("email", e.target.value)} required /></div><div className="form-field"><label htmlFor="phone">{t("details.phone")} <span aria-label={t("date.required")}>*</span></label><input id="phone" type="tel" autoComplete="tel" value={reservation.phone} onChange={(e) => update("phone", e.target.value)} required /></div>
             <div className="form-field field-full"><label htmlFor="occasion">{t("details.occasion")}</label><select id="occasion" value={reservation.occasion} onChange={(e) => update("occasion", e.target.value)}><option value="">{t("details.none")}</option>{[["Birthday", "birthday"], ["Anniversary", "anniversary"], ["Business dinner", "business"], ["Date night", "dateNight"], ["Other", "other"]].map(([value, key]) => <option key={key} value={value}>{t(`details.${key}`)}</option>)}</select><small>{t("details.occasionHint")}</small></div>
             <div className="form-field field-full"><label htmlFor="requests">{t("details.requests")}</label><textarea id="requests" rows={3} placeholder={t("details.requestsPlaceholder")} value={reservation.requests} onChange={(e) => update("requests", e.target.value)} /><small>{t("details.requestsHint")}</small></div>
@@ -119,7 +121,7 @@ export function ReservationFlow({ initialSelection }: { initialSelection: Partia
         {step === 4 && <section className="flow-step"><p className="eyebrow">{t("review.eyebrow")}</p><h2>{t.rich("review.title", { em: (chunks) => <em>{chunks}</em> })}</h2><p className="step-intro">{t("review.intro")}</p><div className="review-card"><div className="review-photo"><Image src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=85" alt={t("summary.imageAlt")} fill sizes="(max-width: 760px) 100vw, 600px" /></div><div className="review-details"><div><span className="review-label">{t("review.dateTime")}</span><strong>{selectedDate}</strong><span>{reservation.time}</span><button type="button" onClick={() => setStep(1)}>{t("review.editDate")} <ChevronRight size={14} aria-hidden="true" /></button></div><div><span className="review-label">{t("review.table")}</span><strong>{common("guests", { count: Number(reservation.guests) })}</strong><span>{seatingName}</span><button type="button" onClick={() => setStep(2)}>{t("review.editTable")} <ChevronRight size={14} aria-hidden="true" /></button></div><div><span className="review-label">{t("review.for")}</span><strong>{reservation.firstName} {reservation.lastName}</strong><span>{reservation.email}</span><span>{reservation.phone}</span></div>{reservation.occasion && <div><span className="review-label">{t("details.occasion")}</span><strong>{t(`details.${{ Birthday: "birthday", Anniversary: "anniversary", "Business dinner": "business", "Date night": "dateNight", Other: "other" }[reservation.occasion] || "other"}`)}</strong></div>}{reservation.requests && <div><span className="review-label">{t("review.note")}</span><p>{reservation.requests}</p></div>}</div></div><p className="policy-note">{t("review.policy", { phone: common("phone") })}</p></section>}
 
         {error && <p className="form-error" role="alert">{error}</p>}
-        <div className="flow-controls">{step > 1 ? <button className="back-button" type="button" onClick={() => { setError(""); setStep((value) => value - 1); }}><ArrowLeft size={16} aria-hidden="true" /> {common("back")}</button> : <span />}{step < 4 ? <button className="button button-dark" type="button" onClick={next} disabled={step === 1 && Number(reservation.guests) >= 9}>{common("continue")} <ArrowRight size={16} aria-hidden="true" /></button> : <button className="button button-dark" type="submit" disabled={isSubmitting}>{isSubmitting ? "Processing..." : t("review.confirm")} {!isSubmitting && <CheckCircle2 size={17} aria-hidden="true" />}</button>}</div>
+        <div className="flow-controls">{step > 1 ? <button className="back-button" type="button" onClick={() => { setError(""); setStep((value) => value - 1); }}><ArrowLeft size={16} aria-hidden="true" /> {common("back")}</button> : <span />}{step < 4 ? <button key="continue" className="button button-dark" type="button" onClick={(event) => { event.preventDefault(); next(); }} disabled={step === 1 && Number(reservation.guests) >= 9}>{common("continue")} <ArrowRight size={16} aria-hidden="true" /></button> : <button key="confirm" className="button button-dark" type="submit" disabled={isSubmitting}>{isSubmitting ? account("busy") : t("review.confirm")} {!isSubmitting && <CheckCircle2 size={17} aria-hidden="true" />}</button>}</div>
       </form>
       <p className="secure-note">{t("secure")}</p>
     </div>

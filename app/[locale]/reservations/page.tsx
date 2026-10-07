@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { requirePageUser } from "@/lib/auth-guards";
 import { ReservationFlow } from "@/components/reservation-flow";
 
 type Locale = "th" | "en";
@@ -16,6 +17,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 export default async function ReservationsPage({ params, searchParams }: { params: Promise<{ locale: Locale }>; searchParams: Promise<SearchSelection> }) {
   const [{ locale }, selection] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
+  const query = new URLSearchParams();
+  for (const key of ["date", "time", "guests"] as const) {
+    if (typeof selection[key] === "string") query.set(key, selection[key]);
+  }
+  const { user } = await requirePageUser(locale, `/reservations${query.size ? `?${query}` : ""}`);
   const t = await getTranslations("reservation");
-  return <div className="subpage reservations-page"><div className="reservation-title page-gutter"><p className="eyebrow">{t("eyebrow")}</p><h1>{t.rich("title", { em: (chunks) => <em>{chunks}</em> })}</h1><p>{t("intro")}</p></div><ReservationFlow initialSelection={selection} /></div>;
+  return <div className="subpage reservations-page"><div className="reservation-title page-gutter"><p className="eyebrow">{t("eyebrow")}</p><h1>{t.rich("title", { em: (chunks) => <em>{chunks}</em> })}</h1><p>{t("intro")}</p></div><ReservationFlow initialSelection={selection} user={{ name: user.name, email: user.email, phone: user.phone }} /></div>;
 }

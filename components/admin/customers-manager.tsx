@@ -12,22 +12,14 @@ export function CustomersManager() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchCustomers();
+    const controller = new AbortController();
+    fetch("/api/customers", { signal: controller.signal })
+      .then((response) => response.json())
+      .then((result) => { if (result.success) setCustomers(result.data); })
+      .catch((error) => { if (!controller.signal.aborted) console.error("Failed to load dashboard data", error); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
-
-  const fetchCustomers = async () => {
-    try {
-      const res = await fetch("/api/customers");
-      const data = await res.json();
-      if (data.success) {
-        setCustomers(data.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch customers", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,7 +59,7 @@ export function CustomersManager() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCustomers.length === 0 ? (
           <div className="col-span-full py-12 text-center text-stone-500 bg-white rounded-2xl border border-stone-200">
-            No customers found matching "{searchTerm}"
+            No customers found matching &quot;{searchTerm}&quot;
           </div>
         ) : (
           filteredCustomers.map(customer => (
